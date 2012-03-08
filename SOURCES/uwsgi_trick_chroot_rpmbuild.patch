@@ -1,8 +1,8 @@
---- a/uwsgiconfig.py	2011-10-09 16:10:25.683322934 -0700
-+++ b/uwsgiconfig.py	2011-10-09 16:10:18.134346887 -0700
-@@ -726,7 +726,7 @@
-     else:
-         p_cflags.append("-D%s_plugin=%s_plugin" % (up.NAME, name))
+--- a/uwsgiconfig.py 2012-02-13 18:26:37.000000000 +0100
++++ b/uwsgiconfig.py 20122012-03-08 16:15:07.000000000 +0100
+@@ -799,7 +799,7 @@
+     except:
+         pass
  
 -    plugin_dest = uc.get('plugin_dir') + '/' + name + '_plugin'
 +    plugin_dest = name + '_plugin'

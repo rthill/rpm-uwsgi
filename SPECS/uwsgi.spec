@@ -1,23 +1,18 @@
-%define wikiversion 25
-
 Name:               uwsgi
-Version:            0.9.9.2
-Release:            4%{?dist}
+Version:            1.0.4
+Release:            1%{?dist}
 Summary:            Fast, self-healing, application container server
 Group:              System Environment/Daemons   
 License:            GPLv2
 URL:                http://projects.unbit.it/uwsgi
 Source0:            http://projects.unbit.it/downloads/%{name}-%{version}.tar.gz
-Source1:            fedora.ini
-# wikiversion=25; curl -o uwsgi-wiki-doc-v${wikiversion}.txt "http://projects.unbit.it/uwsgi/wiki/Doc?version=${wikiversion}&format=txt"
-Source2:            uwsgi-wiki-doc-v%{wikiversion}.txt
-Source3:            uwsgi.init
+Source1:            rhel6.ini
+Source2:            uwsgi.init
 Patch0:             uwsgi_fix_rpath.patch
 Patch1:             uwsgi_trick_chroot_rpmbuild.patch
-BuildRequires:      curl,  python-devel, libxml2-devel, libuuid-devel, jansson-devel
-BuildRequires:      libyaml-devel, perl-devel, ruby-devel, perl-ExtUtils-Embed
-BuildRequires:      python-greenlet-devel, lua-devel, ruby
-BuildRequires:      python3-devel
+BuildRequires:      curl,  python-devel, libxml2-devel, libuuid-devel
+BuildRequires:      perl-ExtUtils-Embed
+BuildRequires:      python-greenlet-devel
 Requires(pre):      shadow-utils
 Requires(post):     /sbin/service
 Requires(preun):    initscripts
@@ -55,22 +50,6 @@ Requires: %{name}
 This package contains the most common plugins used with uWSGI. The
 plugins included in this package are: cache, cgi, rpc, ugreen
 
-%package -n %{name}-plugin-rack
-Summary:  uWSGI - Ruby rack plugin
-Group:    System Environment/Daemons
-Requires: rubygem-rack, %{name}-plugin-common
-
-%description -n %{name}-plugin-rack
-This package contains the rack plugin for uWSGI
-
-%package -n %{name}-plugin-psgi
-Summary:  uWSGI - Plugin for PSGI support
-Group:    System Environment/Daemons
-Requires: perl-PSGI, %{name}-plugin-common
-
-%description -n %{name}-plugin-psgi
-This package contains the psgi plugin for uWSGI
-
 %package -n %{name}-plugin-python
 Summary:  uWSGI - Plugin for Python support
 Group:    System Environment/Daemons
@@ -78,14 +57,6 @@ Requires: python, %{name}-plugin-common
 
 %description -n %{name}-plugin-python
 This package contains the python plugin for uWSGI
-
-%package -n %{name}-plugin-nagios
-Summary:  uWSGI - Plugin for Nagios support
-Group:    System Environment/Daemons
-Requires: %{name}-plugin-common
-
-%description -n %{name}-plugin-nagios
-This package contains the nagios plugin for uWSGI
 
 %package -n %{name}-plugin-fastrouter
 Summary:  uWSGI - Plugin for FastRouter support
@@ -103,22 +74,6 @@ Requires: %{name}-plugin-common
 %description -n %{name}-plugin-admin
 This package contains the admin plugin for uWSGI
 
-%package -n %{name}-plugin-python3
-Summary:  uWSGI - Plugin for Python 3.2 support
-Group:    System Environment/Daemons   
-Requires: python3, %{name}-plugin-common
-
-%description -n %{name}-plugin-python3
-This package contains the Python 3.2 plugin for uWSGI
-
-%package -n %{name}-plugin-ruby
-Summary:  uWSGI - Plugin for Ruby support
-Group:    System Environment/Daemons   
-Requires: ruby, %{name}-plugin-common
-
-%description -n %{name}-plugin-ruby
-This package contains the Ruby 1.9 plugin for uWSGI
-
 %package -n %{name}-plugin-greenlet
 Summary:  uWSGI - Plugin for Python Greenlet support
 Group:    System Environment/Daemons   
@@ -127,25 +82,15 @@ Requires: python-greenlet, %{name}-plugin-common
 %description -n %{name}-plugin-greenlet
 This package contains the python greenlet plugin for uWSGI
 
-%package -n %{name}-plugin-lua
-Summary:  uWSGI - Plugin for LUA support
-Group:    System Environment/Daemons   
-Requires: lua, %{name}-plugin-common
-
-%description -n %{name}-plugin-lua
-This package contains the lua plugin for uWSGI
-
 %prep
 %setup -q
 cp -p %{SOURCE1} buildconf/
-cp -p %{SOURCE2} uwsgi-wiki-doc-v%{wikiversion}.txt
-sed -i 's/\r//' uwsgi-wiki-doc-v%{wikiversion}.txt
 echo "plugin_dir = %{_libdir}/%{name}" >> buildconf/$(basename %{SOURCE1})
 %patch0 -p1
 %patch1 -p1
 
 %build
-CFLAGS="%{optflags} -Wno-unused-but-set-variable" python uwsgiconfig.py --build fedora.ini
+CFLAGS="%{optflags} -Wno-unused-but-set-variable" python uwsgiconfig.py --build rhel6.ini 
 
 %install
 mkdir -p %{buildroot}%{_sysconfdir}/%{name}
@@ -155,7 +100,7 @@ mkdir -p %{buildroot}%{_libdir}/%{name}
 mkdir -p %{buildroot}%{_localstatedir}/log/%{name}
 mkdir -p %{buildroot}%{_localstatedir}/run/%{name}
 %{__install} -d -m 0755 %{buildroot}%{_initrddir}
-%{__install} -p -m 0755 %{SOURCE3} %{buildroot}%{_initrddir}/%{name}
+%{__install} -p -m 0755 %{SOURCE1} %{buildroot}%{_initrddir}/%{name}
 %{__install} -p -m 0755 uwsgi %{buildroot}%{_sbindir}
 %{__install} -p -m 0644 *.h %{buildroot}%{_includedir}/%{name}
 %{__install} -p -m 0644 *_plugin.so %{buildroot}%{_libdir}/%{name}
@@ -187,7 +132,6 @@ fi
 %attr(0755,uwsgi,uwsgi) %{_localstatedir}/log/%{name}
 %attr(0755,uwsgi,uwsgi) %{_localstatedir}/run/%{name}
 %doc ChangeLog LICENSE README
-%doc uwsgi-wiki-doc-v%{wikiversion}.txt
 
 %files -n %{name}-devel
 %{_includedir}/%{name}
@@ -198,17 +142,8 @@ fi
 %{_libdir}/%{name}/rpc_plugin.so
 %{_libdir}/%{name}/ugreen_plugin.so
 
-%files -n %{name}-plugin-rack
-%{_libdir}/%{name}/rack_plugin.so
-
-%files -n %{name}-plugin-psgi
-%{_libdir}/%{name}/psgi_plugin.so
-
 %files -n %{name}-plugin-python
 %{_libdir}/%{name}/python_plugin.so
-
-%files -n %{name}-plugin-nagios
-%{_libdir}/%{name}/nagios_plugin.so
 
 %files -n %{name}-plugin-fastrouter
 %{_libdir}/%{name}/fastrouter_plugin.so
@@ -216,20 +151,15 @@ fi
 %files -n %{name}-plugin-admin
 %{_libdir}/%{name}/admin_plugin.so
 
-%files -n %{name}-plugin-python3
-%{_libdir}/%{name}/python32_plugin.so
-
-%files -n %{name}-plugin-ruby
-%{_libdir}/%{name}/ruby19_plugin.so
-
 %files -n %{name}-plugin-greenlet
 %{_libdir}/%{name}/greenlet_plugin.so
 
-%files -n %{name}-plugin-lua
-%{_libdir}/%{name}/lua_plugin.so
-
 
 %changelog
+* Thu Mar 08 2012 Raoul Thill <raoul.thill@gmail.com> - 1.0.4-1
+- Update to 1.0.4
+- Some modifications to build on RHEL6
+
 * Mon Oct 31 2011 Jeff Goldschrafe <jeff@holyhandgrenade.org> - 0.9.9.2-4
 - Add init script to manage instances
 - Add uwsgi user and group
