@@ -1,6 +1,6 @@
 Name:               uwsgi
 Version:            1.0.4
-Release:            1%{?dist}
+Release:            2%{?dist}
 Summary:            Fast, self-healing, application container server
 Group:              System Environment/Daemons   
 License:            GPLv2
@@ -100,7 +100,7 @@ mkdir -p %{buildroot}%{_libdir}/%{name}
 mkdir -p %{buildroot}%{_localstatedir}/log/%{name}
 mkdir -p %{buildroot}%{_localstatedir}/run/%{name}
 %{__install} -d -m 0755 %{buildroot}%{_initrddir}
-%{__install} -p -m 0755 %{SOURCE1} %{buildroot}%{_initrddir}/%{name}
+%{__install} -p -m 0755 %{SOURCE2} %{buildroot}%{_initrddir}/%{name}
 %{__install} -p -m 0755 uwsgi %{buildroot}%{_sbindir}
 %{__install} -p -m 0644 *.h %{buildroot}%{_includedir}/%{name}
 %{__install} -p -m 0644 *_plugin.so %{buildroot}%{_libdir}/%{name}
